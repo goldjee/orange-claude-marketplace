@@ -1,0 +1,18 @@
+{
+    "$schema": "https://www.schemastore.org/claude-code-marketplace.json",
+    "name": "orange-claude-marketplace",
+    "owner": {
+        "name": "Daniel Ch."
+    },
+    "plugins": [
+        {
+            "name": "stop-slop",
+            "source": "./plugins/stop-slop",
+            "description": "A skill for removing AI tells from prose.",
+            "version": "1.0.0",
+            "author": {
+                "name": "Hardik Pandya"
+            }
+        }
+    ]
+}

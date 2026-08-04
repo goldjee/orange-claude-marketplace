@@ -1,0 +1,22 @@
+pre-commit:
+  commands:
+    # Runs before check so Biome formats the marketplace manifest this rewrites. Unset priorities
+    # sort alphabetically, which would put check first.
+    sync-plugin-list:
+      priority: 1
+      run: bun run sync-plugin-list --stage
+    # No glob: the script inspects the index itself and exits early when no plugin changed, so the
+    # filtering lives in tested code rather than in a pattern that would silently disable the guard.
+    # Runs before check so a commit that is going to be rejected is rejected before files are
+    # rewritten and re-staged.
+    version-check:
+      priority: 2
+      run: bun run version-check
+      skip:
+        - merge
+        - rebase
+    check:
+      priority: 3
+      glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc,css}"
+      run: bun run check --write --no-errors-on-unmatched --files-ignore-unknown=true {staged_files}
+      stage_fixed: true
