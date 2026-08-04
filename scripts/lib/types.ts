@@ -1,12 +1,14 @@
 import type { MARKETPLACE_SCHEMA_URL, PLUGIN_SCHEMA_URL } from './constants';
+import type { PluginSource } from './source';
 
 /**
  * A marketplace entry. Beyond the two required keys it mirrors whatever the plugin manifest holds,
- * so the extra fields stay open rather than being modelled twice.
+ * so the extra fields stay open rather than being modelled twice. A plugin hosted elsewhere has no
+ * manifest here, so its entry carries that metadata itself; see {@link PluginSource}.
  */
 export type MarketplaceEntry = {
     name: string;
-    source: string;
+    source: PluginSource;
 } & Record<string, unknown>;
 
 export type Marketplace = {

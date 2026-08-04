@@ -1,6 +1,7 @@
 import { run } from '../lib/cli';
 import { readMarketplaceManifest } from '../lib/marketplace';
 import { deletePlugin } from '../lib/plugin';
+import { describeSource, isExternalSource } from '../lib/source';
 import { getHelpText, parseCliArgs } from './cli-arguments';
 
 run(async () => {
@@ -23,7 +24,12 @@ run(async () => {
         // be answered. Refusing beats hanging or deleting unasked.
         if (!process.stdin.isTTY) throw new Error('Refusing to delete without confirmation. Re-run with --yes.');
 
-        const answer = prompt(`Delete "${entry.name}" and everything in ${entry.source}? [y/N]`);
+        // An external plugin has no directory here, so only its entry goes.
+        const target = isExternalSource(entry.source)
+            ? `its entry for ${describeSource(entry.source)}`
+            : `everything in ${entry.source}`;
+
+        const answer = prompt(`Delete "${entry.name}" and ${target}? [y/N]`);
         if (answer?.trim().toLowerCase() !== 'y') {
             console.log('Aborted.');
             return;

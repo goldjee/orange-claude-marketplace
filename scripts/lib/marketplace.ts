@@ -1,9 +1,10 @@
 import { MARKETPLACE_PATH } from './constants';
 import { hasName, isRecord, readJsonFile } from './json';
+import { isPluginSource } from './source';
 import type { Marketplace, MarketplaceEntry } from './types';
 
 function isMarketplaceEntry(value: unknown): value is MarketplaceEntry {
-    return isRecord(value) && typeof value.name === 'string' && typeof value.source === 'string';
+    return isRecord(value) && typeof value.name === 'string' && isPluginSource(value.source);
 }
 
 function isMarketplace(value: unknown): value is Marketplace {

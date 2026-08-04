@@ -3,6 +3,7 @@ import { resolve, sep } from 'node:path';
 import { PLUGINS_DIR, PLUGINS_SOURCE_PREFIX } from './constants';
 import { hasName, isRecord, readJsonFile } from './json';
 import { readMarketplaceManifest, writeMarketplaceManifest } from './marketplace';
+import { type ExternalSource, isExternalSource, type Pin, withPin } from './source';
 import type { Marketplace, MarketplaceEntry, Plugin, PluginManifest } from './types';
 import { assertVersion, nextVersion, type ReleaseType } from './version';
 
@@ -53,8 +54,12 @@ function pluginSource(name: string): string {
  */
 const ENTRY_OWNED_FIELDS = new Set(['$schema', 'name', 'source', 'category', 'tags', 'strict']);
 
-/** Manifest keys that never mirror onto an entry, for the reasons above. */
-const MANIFEST_PRIVATE_FIELDS = new Set(['$schema', 'name']);
+/**
+ * Manifest keys that never mirror onto an entry, for the reasons above. `source` is listed because
+ * the mirror is spread over the computed value: a `source` key in a manifest, which the plugin
+ * schema has no place for, would otherwise decide where the marketplace fetches the plugin from.
+ */
+const MANIFEST_PRIVATE_FIELDS = new Set(['$schema', 'name', 'source']);
 
 /** The manifest fields an entry mirrors. */
 function mirroredFields(manifest: PluginManifest): Record<string, unknown> {
@@ -110,6 +115,24 @@ function withPlugins(marketplace: Marketplace, plugins: MarketplaceEntry[]): Mar
 }
 
 /**
+ * Finds the entry of a plugin kept in this repository, rejecting a name the marketplace does not
+ * list and one whose plugin is hosted elsewhere, where there is no manifest here to change.
+ * @param marketplace The marketplace to look in.
+ * @param name Name of the plugin.
+ */
+function localEntry(marketplace: Marketplace, name: string): MarketplaceEntry {
+    const entry = marketplace.plugins.find((plugin) => plugin.name === name);
+    if (!entry) throw new Error(`A plugin with the name "${name}" does not exist in the marketplace. Aborting.`);
+
+    if (isExternalSource(entry.source))
+        throw new Error(
+            `"${name}" is an external plugin, versioned in the repository that hosts it. Re-pin it with: bun run add-external --update --name ${name} [--ref <ref>] [--sha <sha>]. Aborting.`,
+        );
+
+    return entry;
+}
+
+/**
  * Creates a plugin from its manifest and adds it to the marketplace.
  * @param plugin {@link Plugin}
  */
@@ -148,8 +171,7 @@ export async function updatePlugin(name: string, patch: Partial<Plugin>): Promis
     const directory = pluginDirectory(name);
     const marketplace = await readMarketplaceManifest();
 
-    if (!marketplace.plugins.some((entry) => entry.name === name))
-        throw new Error(`A plugin with the name "${name}" does not exist in the marketplace. Aborting.`);
+    localEntry(marketplace, name);
     if (!(await pathExists(directory))) throw new Error(`The directory ${directory} does not exist. Aborting.`);
 
     const original = await readPluginManifest(name);
@@ -184,11 +206,99 @@ export async function updatePlugin(name: string, patch: Partial<Plugin>): Promis
 }
 
 /**
+ * A plugin hosted outside this repository. Everything but the name and the source is optional,
+ * because the plugin's own manifest already carries it; what is set here is what the marketplace
+ * shows before anyone installs the plugin.
+ */
+export type ExternalPlugin = {
+    name: string;
+    /** Omitted only when updating, where the entry keeps the source it already has. */
+    source?: ExternalSource;
+    /** Applied to whichever source is used, so a re-pin need not restate the source. */
+    pin?: Pin;
+    description?: string;
+    version?: string;
+    author?: { name: string };
+    category?: string;
+    tags?: string[];
+    strict?: boolean;
+};
+
+/**
+ * Builds the marketplace entry for an external plugin.
+ * @param plugin The plugin to record.
+ * @param existing The current entry, whose fields the plugin does not set are kept.
+ */
+function externalEntryFor(plugin: ExternalPlugin, existing?: MarketplaceEntry): MarketplaceEntry {
+    const { name, source, pin, ...metadata } = plugin;
+    // An absent field means "leave this as it was", so only what was actually provided is written.
+    const provided = Object.fromEntries(Object.entries(metadata).filter(([, value]) => value !== undefined));
+
+    const next = source ?? existing?.source;
+    if (next === undefined) throw new Error(`A source is required to add "${name}" to the marketplace. Aborting.`);
+    // An inherited source is always external: a local entry never reaches this function.
+    if (!isExternalSource(next)) throw new Error(`"${name}" is a plugin in this repository. Aborting.`);
+
+    return { ...existing, name, source: withPin(next, pin ?? {}), ...provided };
+}
+
+/**
+ * Adds a plugin hosted outside this repository to the marketplace, or rewrites the entry of one that
+ * is already listed. Such a plugin has no manifest here, so its entry is the whole record: no sync
+ * mirrors anything onto it, and nothing but this function writes it.
+ *
+ * @param plugin The plugin to record.
+ * @param options.update Rewrite an existing entry instead of refusing to overwrite it. The source is
+ * replaced whole, since a half-written source locates nothing; metadata the plugin leaves out keeps
+ * its current value, so re-pinning a `ref` does not drop the description.
+ * @returns The entry that was written
+ */
+export async function addExternalPlugin(
+    plugin: ExternalPlugin,
+    options: { update?: boolean } = {},
+): Promise<MarketplaceEntry> {
+    // Validates the name and rejects one that would escape the plugins directory, even though an
+    // external plugin has no directory: the name still has to be a legal plugin reference.
+    const directory = pluginDirectory(plugin.name);
+    const marketplace = await readMarketplaceManifest();
+    const existing = marketplace.plugins.find((entry) => entry.name === plugin.name);
+
+    if (existing && !options.update)
+        throw new Error(
+            `A plugin with the name "${plugin.name}" already exists in the marketplace. Re-run with --update to change it. Aborting.`,
+        );
+    if (!existing && options.update)
+        throw new Error(`A plugin with the name "${plugin.name}" does not exist in the marketplace. Aborting.`);
+    if (existing && !isExternalSource(existing.source))
+        throw new Error(
+            `"${plugin.name}" is a plugin in this repository. Edit its manifest and run sync-plugin-list instead. Aborting.`,
+        );
+
+    // A directory of the same name would shadow the entry: version-check maps changed files back to
+    // plugin names by path, and a sync would look for a manifest this plugin does not have.
+    if (await pathExists(directory))
+        throw new Error(`The directory ${directory} exists, so "${plugin.name}" names a plugin here. Aborting.`);
+
+    const entry = externalEntryFor(plugin, existing);
+    const plugins = existing
+        ? marketplace.plugins.map((current) => (current.name === plugin.name ? entry : current))
+        : [...marketplace.plugins, entry];
+
+    await writeMarketplaceManifest(withPlugins(marketplace, plugins));
+
+    return entry;
+}
+
+/**
  * Reads the current version, hands it to `next`, and writes the result back.
  * @param name Name of the plugin.
  * @param next Computes the new version from the current one.
  */
 async function changeVersion(name: string, next: (current: string) => string): Promise<VersionChange> {
+    // Checked before the manifest is read: for an external plugin that read fails on a missing file,
+    // which says nothing about why the plugin has no version to bump here.
+    localEntry(await readMarketplaceManifest(), name);
+
     const from = (await readPluginManifest(name)).version;
     const to = next(from);
 
@@ -242,6 +352,10 @@ export async function syncMarketplaceEntries(): Promise<EntrySync[]> {
 
     const entries = await Promise.all(
         marketplace.plugins.map(async (entry) => {
+            // An external plugin has no manifest here to mirror; its entry is the whole record and
+            // stays exactly as `add-external` wrote it.
+            if (isExternalSource(entry.source)) return entry;
+
             const updated = entryFor(await readPluginManifest(entry.name), entry);
 
             const keys = new Set([...Object.keys(entry), ...Object.keys(updated)]);
@@ -271,17 +385,18 @@ export async function syncMarketplaceEntries(): Promise<EntrySync[]> {
 }
 
 /**
- * Deletes a plugin from the marketplace.
+ * Deletes a plugin from the marketplace, along with its directory when it has one.
  * @param name Name of the plugin to delete.
  */
 export async function deletePlugin(name: string): Promise<void> {
-    const directory = pluginDirectory(name);
     const marketplace = await readMarketplaceManifest();
 
-    if (!marketplace.plugins.some((entry) => entry.name === name))
-        throw new Error(`A plugin with the name "${name}" does not exist in the marketplace. Aborting.`);
+    const entry = marketplace.plugins.find((plugin) => plugin.name === name);
+    if (!entry) throw new Error(`A plugin with the name "${name}" does not exist in the marketplace. Aborting.`);
 
-    await rm(directory, { recursive: true, force: true });
+    // An external plugin owns no directory here, so deriving one from its name would delete whatever
+    // unrelated directory happens to share it.
+    if (!isExternalSource(entry.source)) await rm(pluginDirectory(name), { recursive: true, force: true });
     await writeMarketplaceManifest(
         withPlugins(
             marketplace,

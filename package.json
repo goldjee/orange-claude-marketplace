@@ -4,10 +4,12 @@
     "private": true,
     "scripts": {
         "create": "bun run ./scripts/create/index.ts",
+        "add-external": "bun run ./scripts/add-external/index.ts",
         "version-bump": "bun run ./scripts/version-bump/index.ts",
         "version-check": "bun run ./scripts/version-check/index.ts",
         "sync-plugin-list": "bun run ./scripts/sync-plugin-list/index.ts",
         "delete": "bun run ./scripts/delete/index.ts",
+        "test": "bun test",
         "lint": "bunx biome lint",
         "format": "bunx biome format",
         "check": "bunx biome check",

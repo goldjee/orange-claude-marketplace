@@ -4,6 +4,7 @@ import { differsFromIndex, stageFile } from '../lib/git';
 import { readMarketplaceManifest } from '../lib/marketplace';
 import { type EntrySync, syncMarketplaceEntries } from '../lib/plugin';
 import { syncReadmePluginTable } from '../lib/readme';
+import { isExternalSource } from '../lib/source';
 import { getHelpText, parseCliArgs } from './cli-arguments';
 
 /** Files this command may rewrite, paired with the pathspec used to compare them against the index. */
@@ -42,6 +43,11 @@ run(async () => {
 
     // Read back rather than reusing `changes`, which holds only the entries that moved.
     const { plugins } = await readMarketplaceManifest();
+
+    // Said out loud, so the summary above is not read as a claim about plugins this never inspected.
+    const external = plugins.filter((entry) => isExternalSource(entry.source)).length;
+    if (external > 0) console.log(`${external} external ${external === 1 ? 'entry' : 'entries'} left as-is.`);
+
     console.log(
         (await syncReadmePluginTable(plugins)) ? 'Rewrote the README plugin table.' : 'README already in sync.',
     );
