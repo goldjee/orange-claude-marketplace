@@ -6,6 +6,21 @@
     },
     "plugins": [
         {
+            "name": "context7",
+            "source": {
+                "source": "git-subdir",
+                "url": "https://github.com/upstash/context7.git",
+                "path": "plugins/claude/context7"
+            },
+            "description": "Up-to-date documentation lookup. Pull version-specific documentation and code examples directly from source repositories into your LLM context.",
+            "version": "1.0.2",
+            "author": {
+                "name": "Upstash"
+            },
+            "category": "documentation",
+            "tags": ["mcp", "docs", "context7"]
+        },
+        {
             "name": "news-digest-mcp",
             "source": {
                 "source": "github",
@@ -17,6 +32,24 @@
                 "name": "Daniel Ch."
             },
             "tags": ["mcp", "news", "rss"]
+        },
+        {
+            "name": "sequential-thinking",
+            "source": "./plugins/sequential-thinking",
+            "description": "Structured step-by-step reasoning through the Sequential Thinking MCP server.",
+            "version": "1.0.0",
+            "author": {
+                "name": "modelcontextprotocol"
+            },
+            "mcpServers": {
+                "sequential-thinking": {
+                    "type": "stdio",
+                    "command": "npx",
+                    "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+                }
+            },
+            "category": "productivity",
+            "tags": ["mcp", "reasoning", "thinking"]
         },
         {
             "name": "stop-slop",

@@ -1,0 +1,16 @@
+{
+    "$schema": "https://www.schemastore.org/claude-code-plugin-manifest.json",
+    "name": "sequential-thinking",
+    "description": "Structured step-by-step reasoning through the Sequential Thinking MCP server.",
+    "version": "1.0.0",
+    "author": {
+        "name": "modelcontextprotocol"
+    },
+    "mcpServers": {
+        "sequential-thinking": {
+            "type": "stdio",
+            "command": "npx",
+            "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+        }
+    }
+}
