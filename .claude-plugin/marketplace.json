@@ -21,6 +21,17 @@
             "tags": ["mcp", "docs", "context7"]
         },
         {
+            "name": "hr-job-posting-analysis",
+            "source": "./plugins/hr-job-posting-analysis",
+            "description": "Researches a job posting and judges it as an opportunity: company background, reviews, why the role exists, green and red flags, and CV fit.",
+            "version": "1.0.0",
+            "author": {
+                "name": "Daniel Ch."
+            },
+            "category": "productivity",
+            "tags": ["hiring", "jobs", "research"]
+        },
+        {
             "name": "news-digest-mcp",
             "source": {
                 "source": "url",

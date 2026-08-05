@@ -1,0 +1,9 @@
+{
+    "$schema": "https://www.schemastore.org/claude-code-plugin-manifest.json",
+    "name": "hr-job-posting-analysis",
+    "description": "Researches a job posting and judges it as an opportunity: company background, reviews, why the role exists, green and red flags, and CV fit.",
+    "version": "1.0.0",
+    "author": {
+        "name": "Daniel Ch."
+    }
+}
