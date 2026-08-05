@@ -6,6 +6,19 @@
     },
     "plugins": [
         {
+            "name": "news-digest-mcp",
+            "source": {
+                "source": "github",
+                "repo": "goldjee/news-digest-mcp"
+            },
+            "description": "A simple MCP server that fetches news from Telegram and RSS sources.",
+            "category": "productivity",
+            "author": {
+                "name": "Daniel Ch."
+            },
+            "tags": ["mcp", "news", "rss"]
+        },
+        {
             "name": "stop-slop",
             "source": "./plugins/stop-slop",
             "description": "A skill for removing AI tells from prose.",

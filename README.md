@@ -9,6 +9,7 @@ Add the marketplace, then install what you want from it:
 ```bash
 /plugin marketplace add goldjee/orange-claude-marketplace
 /plugin install stop-slop@orange-claude-marketplace
+/plugin install news-digest-mcp@orange-claude-marketplace
 ```
 
 Swap the local path for the repository URL once you publish it.
@@ -16,6 +17,7 @@ Swap the local path for the repository URL once you publish it.
 <!-- plugins:start -->
 | Plugin | What it does |
 | --- | --- |
+| `news-digest-mcp` | A simple MCP server that fetches news from Telegram and RSS sources. |
 | `stop-slop` | A skill for removing AI tells from prose. |
 <!-- plugins:end -->
 
