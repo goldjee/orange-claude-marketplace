@@ -1,7 +1,7 @@
 ---
 name: hr-job-posting-analysis
 description: "Researches a job posting and judges it as an opportunity: company background, employee reviews, why the role exists, green and red flags, and CV fit. Use when someone shares a job description or a posting link and wants to know what the role really is, whether the company is worth joining, or whether to apply."
-argument-hint: [company] [job description or link]
+argument-hint: "[company] [job description or link]"
 ---
 
 # Job Posting Analysis

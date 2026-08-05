@@ -1,6 +1,6 @@
 import { rename, rm, stat } from 'node:fs/promises';
 import { resolve, sep } from 'node:path';
-import { PLUGINS_DIR, PLUGINS_SOURCE_PREFIX } from './constants';
+import { PLUGIN_SKILLS_DIR, PLUGINS_DIR, PLUGINS_SOURCE_PREFIX } from './constants';
 import { hasName, isRecord, readJsonFile } from './json';
 import { readMarketplaceManifest, writeMarketplaceManifest } from './marketplace';
 import { type ExternalSource, isExternalSource, type Pin, withPin } from './source';
@@ -91,6 +91,34 @@ function manifestPath(name: string): string {
     return `${pluginDirectory(name)}/.claude-plugin/plugin.json`;
 }
 
+/** Path of the skill {@link createPlugin} scaffolds, named after the plugin that ships it. */
+function skillPath(name: string): string {
+    return `${pluginDirectory(name)}/${PLUGIN_SKILLS_DIR}/${name}/SKILL.md`;
+}
+
+/**
+ * The starting point for a new plugin's skill, carrying the manifest's own name and description so
+ * the skill is discoverable the moment its body is written.
+ *
+ * The description is emitted through `JSON.stringify`, whose output is a valid YAML double-quoted
+ * scalar. Descriptions routinely contain `: `, which ends the key in a plain scalar and would make
+ * the frontmatter unparseable. The name needs no quoting: {@link PLUGIN_NAME_PATTERN} already
+ * excludes every character that would.
+ */
+function skillStub(plugin: Plugin): string {
+    return [
+        '---',
+        `name: ${plugin.name}`,
+        `description: ${JSON.stringify(plugin.description)}`,
+        '---',
+        '',
+        `# ${plugin.name}`,
+        '',
+        "<!-- Replace this with the skill's instructions. -->",
+        '',
+    ].join('\n');
+}
+
 async function readPluginManifest(pluginName: string): Promise<PluginManifest> {
     return readJsonFile(manifestPath(pluginName), isPlugin, `The manifest for plugin "${pluginName}"`);
 }
@@ -153,6 +181,9 @@ export async function createPlugin(plugin: Plugin): Promise<void> {
     await writePluginManifest(plugin);
 
     try {
+        // Scaffolded rather than left to the author: a `SKILL.md` placed at the plugin root instead
+        // loads in Claude Code but not in Claude Desktop. See PLUGIN_SKILLS_DIR.
+        await Bun.write(skillPath(plugin.name), skillStub(plugin));
         await writeMarketplaceManifest(withPlugins(marketplace, [...marketplace.plugins, entryFor(plugin)]));
     } catch (error) {
         // Leaving the directory behind would make it the unlisted directory rejected above.

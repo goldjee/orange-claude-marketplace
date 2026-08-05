@@ -30,6 +30,11 @@ bun run version-check [--working-tree]
   `source` stays repo-relative with the leading `./` the schema requires.
 - Plugin names become directory names and must match `^[A-Za-z0-9][-A-Za-z0-9._]*$`.
 - Versions are plain `MAJOR.MINOR.PATCH`; prerelease identifiers are rejected.
+- A plugin's skills live at `plugins/<plugin>/skills/<skill>/SKILL.md`. Claude Code also loads a lone
+  `SKILL.md` at the plugin root, but Claude Desktop does not — it scans `skills/`, `agents/` and
+  `commands/` only, so the root layout ships a plugin whose skills are invisible in half the clients.
+  `create` scaffolds the working layout; don't flatten it. Supporting files a `SKILL.md` links to,
+  such as a `references/` directory, move with it into the skill folder.
 - A local plugin's marketplace entry mirrors its manifest: `sync-plugin-list` copies every manifest
   field except `$schema`, `name` and `source`, and removes entry fields the manifest has dropped.
   Only `source`, `category`, `tags` and `strict` are marketplace-owned. Anything writing such an

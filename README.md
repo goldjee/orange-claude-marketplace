@@ -48,8 +48,11 @@ manifests in step.
 ### Adding a plugin
 
 1. `bun run create --name my-plugin --description "What it does."`
-2. Fill in `plugins/my-plugin/`.
+2. Fill in the scaffolded `plugins/my-plugin/skills/my-plugin/SKILL.md`.
 3. Commit.
+
+Keep skills in `skills/<skill>/SKILL.md`. Claude Code also loads a lone `SKILL.md` at the plugin
+root, but Claude Desktop only scans `skills/`, `agents/` and `commands/`.
 
 ### Changing a plugin
 
