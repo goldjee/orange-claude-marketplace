@@ -23,8 +23,8 @@
         {
             "name": "news-digest-mcp",
             "source": {
-                "source": "github",
-                "repo": "goldjee/news-digest-mcp"
+                "source": "url",
+                "url": "https://github.com/goldjee/news-digest-mcp.git"
             },
             "description": "A simple MCP server that fetches news from Telegram and RSS sources.",
             "category": "productivity",
