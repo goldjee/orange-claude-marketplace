@@ -20,7 +20,7 @@ Swap the local path for the repository URL once you publish it.
 | Plugin | What it does |
 | --- | --- |
 | `context7` | Up-to-date documentation lookup. Pull version-specific documentation and code examples directly from source repositories into your LLM context. |
-| `hr-job-posting-analysis` | Researches a job posting and judges it as an opportunity: company background, reviews, why the role exists, green and red flags, and CV fit. |
+| `job-search` | A toolset that helps job seekers. |
 | `news-digest-mcp` | A simple MCP server that fetches news from Telegram and RSS sources. |
 | `sequential-thinking` | Structured step-by-step reasoning through the Sequential Thinking MCP server. |
 | `stop-slop` | A skill for removing AI tells from prose. |

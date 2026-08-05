@@ -2,8 +2,9 @@
     "$schema": "https://www.schemastore.org/claude-code-plugin-manifest.json",
     "name": "stop-slop",
     "description": "A skill for removing AI tells from prose.",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "author": {
         "name": "Hardik Pandya"
-    }
+    },
+    "license": "MIT"
 }

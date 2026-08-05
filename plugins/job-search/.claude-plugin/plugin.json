@@ -1,0 +1,9 @@
+{
+    "$schema": "https://www.schemastore.org/claude-code-plugin-manifest.json",
+    "name": "job-search",
+    "description": "A toolset that helps job seekers.",
+    "version": "1.0.2",
+    "author": {
+        "name": "Daniel Ch."
+    }
+}
