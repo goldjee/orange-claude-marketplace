@@ -45,6 +45,14 @@
             "tags": ["mcp", "news", "rss"]
         },
         {
+            "name": "ponytail",
+            "source": {
+                "source": "url",
+                "url": "https://github.com/DietrichGebert/ponytail.git"
+            },
+            "description": "Lazy senior dev mode. Forces the simplest, shortest solution that actually works: YAGNI, stdlib first, no unrequested abstractions."
+        },
+        {
             "name": "sequential-thinking",
             "source": "./plugins/sequential-thinking",
             "description": "Structured step-by-step reasoning through the Sequential Thinking MCP server.",

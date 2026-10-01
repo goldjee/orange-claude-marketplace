@@ -22,6 +22,7 @@ Swap the local path for the repository URL once you publish it.
 | `context7` | Up-to-date documentation lookup. Pull version-specific documentation and code examples directly from source repositories into your LLM context. |
 | `job-search` | A toolset that helps job seekers. |
 | `news-digest-mcp` | A simple MCP server that fetches news from Telegram and RSS sources. |
+| `ponytail` | Lazy senior dev mode. Forces the simplest, shortest solution that actually works: YAGNI, stdlib first, no unrequested abstractions. |
 | `sequential-thinking` | Structured step-by-step reasoning through the Sequential Thinking MCP server. |
 | `stop-slop` | A skill for removing AI tells from prose. |
 <!-- plugins:end -->
